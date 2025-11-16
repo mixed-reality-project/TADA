@@ -365,3 +365,8 @@ cython_debug/
 
 # Android studio 3.1+ serialized cache file
 
+.idea
+lib
+Avatar-100
+data
+samples

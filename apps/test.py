@@ -280,6 +280,12 @@ class Animation:
         )
 
         print(output.v_posed.size())
+        print(output.joints_transform.size())
+        print(self.body_model.parents)
+        print(self.dense_lbs_weights.size())
+
+        # for i in range(0, output.joints_transform.size()[1], 10):
+        #     print(output.joints_transform[0, i])
 
 
 if __name__ == '__main__':

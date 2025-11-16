@@ -325,9 +325,10 @@ class Animation:
         pScene.GetRootNode().AddChild(lMeshNode)
         pScene.GetRootNode().AddChild(lSkeletonRoot)
 
-        weightsInfo = open("SkinWeights.txt", "r")
+        # weightsInfo = open("SkinWeights.txt", "r")
         for i in range(0, 55):
-            self.SkeletonWeights.append(weightsInfo.readline())
+            # self.SkeletonWeights.append(weightsInfo.readline())
+            self.SkeletonWeights.append(self.dense_lbs_weights[:,i])
         lSkin = FbxSkin.Create(pSdkManager, "")
         # self.LinkMeshToSkeleton(lSdkManager, lMeshNode, lSkin)
         self.LinkMeshToSkeleton(pSdkManager, lMeshNode, lSkin)
@@ -438,7 +439,7 @@ class Animation:
         lSkeletonRoot.LclTranslation.Set(FbxDouble3(float(rootInfo[0,3]), float(rootInfo[1,3]), float(rootInfo[2,3])))
 
         self.nodeDict[0] = lSkeletonRoot
-        locDict = {0: (float(rootInfo[1]), float(rootInfo[2]), float(rootInfo[3]))}
+        locDict = {0: (float(rootInfo[0,3]), float(rootInfo[1,3]), float(rootInfo[2,3]))}
 
         for i in range(1, 55):
             skeletonInfo = jointsLoc[i]
@@ -451,13 +452,14 @@ class Animation:
             skeletonNode = FbxNode.Create(pSdkManager, skeletonName)
             skeletonNode.SetNodeAttribute(skeletonAtrribute)
             self.nodeDict[i] = skeletonNode
-            locDict[i] = (float(skeletonInfo[1]), float(skeletonInfo[2]), float(skeletonInfo[3]))
-            skeletonFather = int(skeletonInfo[0])
+            locDict[i] = (float(skeletonInfo[0,3]), float(skeletonInfo[1,3]), float(skeletonInfo[2,3]))
+            # skeletonFather = int(skeletonInfo[0])
+            skeletonFather = int(self.body_model.parents[i])
             fatherNode = self.nodeDict[skeletonFather]
             skeletonNode.LclTranslation.Set(
-                FbxDouble3(float(float(skeletonInfo[1]) - float(locDict[skeletonFather][0])),
-                           float(float(skeletonInfo[2]) - float(locDict[skeletonFather][1])),
-                           float(float(skeletonInfo[3]) - float(locDict[skeletonFather][2]))))
+                FbxDouble3(float(float(skeletonInfo[0,3]) - float(locDict[skeletonFather][0,3])),
+                           float(float(skeletonInfo[1,3]) - float(locDict[skeletonFather][1,3])),
+                           float(float(skeletonInfo[2,3]) - float(locDict[skeletonFather][2,3]))))
             fatherNode.AddChild(skeletonNode)
 
         return lSkeletonRoot
@@ -467,11 +469,12 @@ class Animation:
             skeletonNode = self.nodeDict[i]
             skeletonName = skeletonNode.GetName()
             skeletonNum = self.Joints2Num[str(skeletonName)]
-            skeletonWeightsInfo = self.SkeletonWeights[skeletonNum].split(' ')
+            # skeletonWeightsInfo = self.SkeletonWeights[skeletonNum].split(' ')
+            skeletonWeightsInfo = self.SkeletonWeights[skeletonNum]
             skeletonCluster = FbxCluster.Create(pSdkManager, "")
             skeletonCluster.SetLink(skeletonNode)
             skeletonCluster.SetLinkMode(FbxCluster.eNormalize)
-            for j in range(0, 10475):
+            for j in range(0, self.num_vertices):
                 skeletonCluster.AddControlPointIndex(j, float(skeletonWeightsInfo[j]))
 
             # Now we have the Mesh and the skeleton correctly positioned,
